@@ -74,10 +74,18 @@ sideBounce game = game { ballVel = (vx', vy) }
       vx' = if sideCollision (ballLoc game) radius then -vx else vx
 
 blocksBounce :: BreakoutGame -> BreakoutGame
-blocksBounce game = game { ballVel = (vx', vy) }
+blocksBounce game 
+	| leftCollision = game { ballVel = (-vx, vy) }
+	| rightCollision = game { ballVel = (-vx, vy) }
+	| topCollision = game { ballVel = (vx, -vy) }
+	| bottomCollision = game { ballVel = (vx, -vy) }
+	| otherwise = game
    where
      (vx, vy) = ballVel game
-     vx' = if any (id) [leftBlockCollision block (ballLoc game) radius | block <- (blocks game)] then -vx else vx
+     leftCollision = any (id) [leftBlockCollision block (ballLoc game) radius | block <- (blocks game)]
+     rightCollision = any (id) [rightBlockCollision block (ballLoc game) radius | block <- (blocks game)]
+     topCollision = any (id) [topBlockCollision block (ballLoc game) radius | block <- (blocks game)]
+     bottomCollision = any (id) [bottomBlockCollision block (ballLoc game) radius | block <- (blocks game)]
 
 
 
@@ -137,7 +145,10 @@ rightBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
     where
         withinX = x - radius >= (blockX + blockWidth / 2) && x <= (blockX + blockWidth / 2)
         withinY = y >= blockY - blockHeight / 2 && y <= blockY + blockHeight / 2
-
+bottomBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
+    where
+        withinX = x + radius >= (blockX - blockWidth / 2) && x - radius <= (blockX + blockWidth / 2)
+        withinY = y +radius >= (blockY - blockHeight / 2) && y <= (blockY - blockHeight / 2)
 
 handleKeys :: Event -> BreakoutGame -> BreakoutGame
 
@@ -170,3 +181,4 @@ main = play window background fps initialState render handleKeys update
         -- timePassed -> game state -> new state
         update :: Float -> BreakoutGame -> BreakoutGame
         update seconds = blocksBounce . sideBounce . topBounce . paddleBounce . moveBall seconds . paddleMove seconds
+
