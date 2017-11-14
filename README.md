@@ -40,7 +40,7 @@ Assign yourself to a task by prefixing with your name.
     - increase for each block
 
 - complete collisions with blocks
-    - collide on all sides
+    - [John R] collide on all sides
     - blocks disappear
     - score increases
 
@@ -49,3 +49,4 @@ Assign yourself to a task by prefixing with your name.
 
 
 - tests
+
