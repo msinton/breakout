@@ -11,7 +11,7 @@ Commits
 
 Policy:
 
-    Use git pull rebase always.
+    Use `git pull --rebase` always.
 
     Do commit directly to master.
 
