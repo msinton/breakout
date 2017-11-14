@@ -44,9 +44,19 @@ Assign yourself to a task by prefixing with your name.
     - blocks disappear
     - score increases
 
+- blocks
+    - different coloured blocks earn different points and require multiple hits
+    - interpreter - read block data from file to generate level
+    - obstructions - blocks that do not disappear but do not need to be cleared
+
 - dying
     - restarts game after next key press
 
+- levels
+    - when clear all blocks progress to next level
+
+- scoreboard
+    - display highscores
+    - enter name for highscore
 
 - tests
-
