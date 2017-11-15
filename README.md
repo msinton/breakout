@@ -40,7 +40,7 @@ Assign yourself to a task by prefixing with your name.
     - increase for each block
 
 - complete collisions with blocks
-    - blocks disappear
+    - [John R] blocks disappear
     - score increases
 
 - blocks
