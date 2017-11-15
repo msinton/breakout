@@ -30,7 +30,7 @@ Assign yourself to a task by prefixing with your name.
     - [Matt SH] separate grid properties - convert to a data type
 
 - improve collisions with blocks/paddle
-    - detect collisions on corners
+    - [John R] detect collisions on corners
     - take velocity into account
     - change vx and vy proportionally wrt corner collisions
     - allow size of paddle to vary independently to size of blocks
