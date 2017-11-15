@@ -133,22 +133,30 @@ bottomCollision (_, y) radius = y - radius <= - (height / 2)
 sideCollision    (x, _) radius = abs(x) + radius >=  width / 2
 
 topBlockCollision, leftBlockCollision, rightBlockCollision :: Position -> Position -> Radius -> Bool
-topBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
+topBlockCollision block@(blockX, blockY) (x, y) radius = withinY && withinX
     where
         withinX = x + radius >= (blockX - blockWidth / 2) && x - radius <= (blockX + blockWidth / 2)
-        withinY = y >= blockY && y - radius <= blockY + blockHeight / 2
+        withinY = y - radius <= (blockY + blockHeight / 2) && y >= (blockY + blockHeight / 2)
 leftBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
     where
         withinX = x + radius >= (blockX - blockWidth / 2) && x <= (blockX - blockWidth / 2)
-        withinY = y >= blockY - blockHeight / 2 && y <= blockY + blockHeight / 2
+        withinY = y + radius >= (blockY - blockHeight / 2) && y - radius <= (blockY + blockHeight / 2)
 rightBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
     where
-        withinX = x - radius >= (blockX + blockWidth / 2) && x <= (blockX + blockWidth / 2)
-        withinY = y >= blockY - blockHeight / 2 && y <= blockY + blockHeight / 2
+        withinX = x - radius <= (blockX + blockWidth / 2) && x >= (blockX + blockWidth / 2)
+        withinY = y + radius >= (blockY - blockHeight / 2) && y - radius <= (blockY + blockHeight / 2)
 bottomBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
     where
         withinX = x + radius >= (blockX - blockWidth / 2) && x - radius <= (blockX + blockWidth / 2)
-        withinY = y +radius >= (blockY - blockHeight / 2) && y <= (blockY - blockHeight / 2)
+        withinY = y + radius >= (blockY - blockHeight / 2) && y <= (blockY - blockHeight / 2)
+
+blockLeft :: Position -> Float
+blockLeft (blockX, blockY) = blockX - blockWidth / 2
+blockRight (blockX, blockY) = blockX + blockWidth / 2
+blockTop (blockX, blockY) = blockY - blockWidth / 2
+blockBottom (blockX, blockY) = blockY - blockWidth / 2
+
+
 
 handleKeys :: Event -> BreakoutGame -> BreakoutGame
 
@@ -160,8 +168,7 @@ handleKeys (EventKey (SpecialKey KeyRight) Up _ _) game =   game { keyRight = Fa
 -- Do nothing for all other events.
 handleKeys _ game = game
 
-paddleMove seconds game = game { paddle = (x', y), paddleVel = vx' }
-    where
+paddleMove seconds game = game { paddle = (x', y), paddleVel = vx' } where
       left = keyLeft game
       right = keyRight game
       (x, y) = paddle game
