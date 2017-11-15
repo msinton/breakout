@@ -2,10 +2,12 @@ module Main(main) where
 
 import Data.List
 import Data.Fixed
+import Data.Maybe
 import Graphics.Gloss
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 import BreakoutGame
+
 
 blockWidth, blockHeight, borderSize :: Float
 blockWidth = 70
@@ -75,10 +77,10 @@ sideBounce game = game { ballVel = (vx', vy) }
 
 blocksBounce :: BreakoutGame -> BreakoutGame
 blocksBounce game 
-	| leftCollision = game { ballVel = (-vx, vy) }
-	| rightCollision = game { ballVel = (-vx, vy) }
-	| topCollision = game { ballVel = (vx, -vy) }
-	| bottomCollision = game { ballVel = (vx, -vy) }
+	| leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
+	| rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
+	| topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
+	| bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
 	| otherwise = game
    where
      (vx, vy) = ballVel game
@@ -86,6 +88,15 @@ blocksBounce game
      rightCollision = any (id) [rightBlockCollision block (ballLoc game) radius | block <- (blocks game)]
      topCollision = any (id) [topBlockCollision block (ballLoc game) radius | block <- (blocks game)]
      bottomCollision = any (id) [bottomBlockCollision block (ballLoc game) radius | block <- (blocks game)]
+     newBlocks = filter (/=(fromJust collidedBlock)) (blocks game)
+     collidedBlock = find (blockCollision game radius) (blocks game)
+     blockCollision game radius block = any id $ [leftBlockCollision, rightBlockCollision, topBlockCollision, bottomBlockCollision] <*> [block] <*> [ballLoc game] <*> [radius]
+
+restartGame :: BreakoutGame -> BreakoutGame
+restartGame game = if ballOut then game { ballLoc = ballLoc initialState, ballVel = ballVel initialState } else game
+	where 
+	ballOut = y < -(height / 2) + radius
+	(x, y) = ballLoc game
 
 
 
@@ -187,5 +198,5 @@ main = play window background fps initialState render handleKeys update
     where
         -- timePassed -> game state -> new state
         update :: Float -> BreakoutGame -> BreakoutGame
-        update seconds = blocksBounce . sideBounce . topBounce . paddleBounce . moveBall seconds . paddleMove seconds
+        update seconds = restartGame . blocksBounce . sideBounce . topBounce . paddleBounce . moveBall seconds . paddleMove seconds
 
