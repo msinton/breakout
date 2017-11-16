@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     BreakoutGame
+  exposed-modules:     BreakoutGame, Collisions, LayoutDimensions
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
 

@@ -7,18 +7,9 @@ import Graphics.Gloss
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 import BreakoutGame
+import Collisions
+import LayoutDimensions
 
-
-blockWidth, blockHeight, borderSize :: Float
-blockWidth = 70
-blockHeight = 22
-borderSize = 100
-
-gridWidth, gridHeight, width, height :: Float
-gridWidth = 7 * blockWidth
-gridHeight = 500
-width = gridWidth + 2 * borderSize
-height = gridHeight + 2 * borderSize
 
 window :: Display
 window = InWindow "Breakout" (round width, round height) (0, 0)
@@ -76,8 +67,8 @@ sideBounce game = game { ballVel = (vx', vy) }
       vx' = if sideCollision (ballLoc game) radius then -vx else vx
 
 blocksBounce :: BreakoutGame -> BreakoutGame
-blocksBounce game 
-	| leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
+blocksBounce game
+        | leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
 	| rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
 	| topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
 	| bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
@@ -95,9 +86,7 @@ blocksBounce game
 restartGame :: BreakoutGame -> BreakoutGame
 restartGame game = if ballOut then game { ballLoc = ballLoc initialState, ballVel = ballVel initialState } else game
 	where 
-	ballOut = y < -(height / 2) + radius
-	(x, y) = ballLoc game
-
+	ballOut = bottomCollision (ballLoc game) radius
 
 
 moveBall :: Float -> BreakoutGame -> BreakoutGame
@@ -134,39 +123,12 @@ render game = pictures $ [
 fps :: Int
 fps = 60
 
-type Radius = Float
-type Position = (Float, Float)
-
--- | Given position and radius of the ball, return whether a collision occurred.
-topCollision, bottomCollision, sideCollision :: Position -> Radius -> Bool
-topCollision    (_, y) radius = y + radius >=    height / 2
-bottomCollision (_, y) radius = y - radius <= - (height / 2)
-sideCollision    (x, _) radius = abs(x) + radius >=  width / 2
-
-topBlockCollision, leftBlockCollision, rightBlockCollision :: Position -> Position -> Radius -> Bool
-topBlockCollision block@(blockX, blockY) (x, y) radius = withinY && withinX
-    where
-        withinX = x + radius >= (blockX - blockWidth / 2) && x - radius <= (blockX + blockWidth / 2)
-        withinY = y - radius <= (blockY + blockHeight / 2) && y >= (blockY + blockHeight / 2)
-leftBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
-    where
-        withinX = x + radius >= (blockX - blockWidth / 2) && x <= (blockX - blockWidth / 2)
-        withinY = y + radius >= (blockY - blockHeight / 2) && y - radius <= (blockY + blockHeight / 2)
-rightBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
-    where
-        withinX = x - radius <= (blockX + blockWidth / 2) && x >= (blockX + blockWidth / 2)
-        withinY = y + radius >= (blockY - blockHeight / 2) && y - radius <= (blockY + blockHeight / 2)
-bottomBlockCollision (blockX, blockY) (x, y) radius = withinY && withinX
-    where
-        withinX = x + radius >= (blockX - blockWidth / 2) && x - radius <= (blockX + blockWidth / 2)
-        withinY = y + radius >= (blockY - blockHeight / 2) && y <= (blockY - blockHeight / 2)
 
 blockLeft :: Position -> Float
 blockLeft (blockX, blockY) = blockX - blockWidth / 2
 blockRight (blockX, blockY) = blockX + blockWidth / 2
 blockTop (blockX, blockY) = blockY - blockWidth / 2
 blockBottom (blockX, blockY) = blockY - blockWidth / 2
-
 
 
 handleKeys :: Event -> BreakoutGame -> BreakoutGame

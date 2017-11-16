@@ -25,9 +25,9 @@ Tasks
 Assign yourself to a task by prefixing with your name.
 
 - tidy code:
-    - separate collision logic
+    - [Matt SH] separate collision logic
     - generalise collision fns/ use function composition to get DRY
-    - [Matt SH] separate grid properties - convert to a data type
+    - encapsulate all dimensions in a data record?
 
 - improve collisions with blocks/paddle
     - [John R] detect collisions on corners
