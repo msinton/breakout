@@ -69,10 +69,10 @@ sideBounce game = game { ballVel = (vx', vy) }
 blocksBounce :: BreakoutGame -> BreakoutGame
 blocksBounce game
         | leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
-	| rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
-	| topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
-	| bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
-	| otherwise = game
+        | rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
+        | topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
+        | bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
+        | otherwise = game
    where
      (vx, vy) = ballVel game
      leftCollision = any (id) [leftBlockCollision block (ballLoc game) radius | block <- (blocks game)]
@@ -85,7 +85,7 @@ blocksBounce game
 
 restartGame :: BreakoutGame -> BreakoutGame
 restartGame game = if ballOut then game { ballLoc = ballLoc initialState, ballVel = ballVel initialState } else game
-	where 
+        where
 	ballOut = bottomCollision (ballLoc game) radius
 
 
