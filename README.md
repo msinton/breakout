@@ -30,18 +30,9 @@ Assign yourself to a task by prefixing with your name.
     - encapsulate all dimensions in a data record?
 
 - improve collisions with blocks/paddle
-    - [John R] detect collisions on corners
     - take velocity into account
     - change vx and vy proportionally wrt corner collisions
     - allow size of paddle to vary independently to size of blocks
-
-- score
-    - add to game state
-    - increase for each block
-
-- complete collisions with blocks
-    - [John R] blocks disappear
-    - score increases
 
 - blocks
     - different coloured blocks earn different points and require multiple hits

@@ -37,6 +37,7 @@ initialState = Game
   , keyLeft = False
   , keyRight = False
   , blocks = map gridPosToPos blocksByGrid
+  , score = 0
   }
 
 blockColor = green
@@ -68,10 +69,10 @@ sideBounce game = game { ballVel = (vx', vy) }
 
 blocksBounce :: BreakoutGame -> BreakoutGame
 blocksBounce game
-        | leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
-        | rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks}
-        | topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
-        | bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks}
+        | leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks, score = 1 + score game}
+        | rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks, score = 1 + score game}
+        | topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks, score = 1 + score game}
+        | bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks, score = 1 + score game}
         | otherwise = game
    where
      (vx, vy) = ballVel game
@@ -107,6 +108,7 @@ render :: BreakoutGame -> Picture
 render game = pictures $ [
     ball
     , mkBlock paddleBorderColor paddleColor $ paddle game
+    , scoreText $ score game
     ] ++ [ mkBlock blockBorderColor blockColor b | b <- blocks game]
     where
         ball = uncurry translate (ballLoc game) $ color ballColor $ circleSolid radius
@@ -119,6 +121,8 @@ render game = pictures $ [
             , translate x y $ color col $ rectangleSolid (paddleWidth - 4) (paddleHeight - 4)
             ]
 
+scoreText :: Integer -> Picture
+scoreText i = translate (width / 3) (height / 3) $ scale 0.25 0.25 $ color red $ text $ show i
 
 fps :: Int
 fps = 60
