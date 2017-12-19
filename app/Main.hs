@@ -49,9 +49,8 @@ paddleBounce :: BreakoutGame -> BreakoutGame
 paddleBounce game = game { ballVel = (vx', vy') }
   where
     (vx, vy) = ballVel game
-    vy' = if topBlockCollision (paddle game) (ballLoc game) radius then -vy else vy
-    vx' = if leftBlockCollision (paddle game) (ballLoc game) radius ||
-             rightBlockCollision (paddle game) (ballLoc game) radius
+    vy' = if verticalBlockCollision (paddle game) (ballLoc game) radius then -vy else vy
+    vx' = if horizontalBlockCollision (paddle game) (ballLoc game) radius 
           then -vx
           else vx
 
@@ -69,20 +68,16 @@ sideBounce game = game { ballVel = (vx', vy) }
 
 blocksBounce :: BreakoutGame -> BreakoutGame
 blocksBounce game
-        | leftCollision = game { ballVel = (-vx, vy) , blocks = newBlocks, score = 1 + score game}
-        | rightCollision = game { ballVel = (-vx, vy) , blocks = newBlocks, score = 1 + score game}
-        | topCollision = game { ballVel = (vx, -vy) , blocks = newBlocks, score = 1 + score game}
-        | bottomCollision = game { ballVel = (vx, -vy) , blocks = newBlocks, score = 1 + score game}
+        | horizontalCollision = game { ballVel = (-vx, vy) , blocks = newBlocks, score = 1 + score game}
+        | verticalCollision = game { ballVel = (vx, -vy) , blocks = newBlocks, score = 1 + score game}
         | otherwise = game
    where
      (vx, vy) = ballVel game
-     leftCollision = any (id) [leftBlockCollision block (ballLoc game) radius | block <- (blocks game)]
-     rightCollision = any (id) [rightBlockCollision block (ballLoc game) radius | block <- (blocks game)]
-     topCollision = any (id) [topBlockCollision block (ballLoc game) radius | block <- (blocks game)]
-     bottomCollision = any (id) [bottomBlockCollision block (ballLoc game) radius | block <- (blocks game)]
+     horizontalCollision = any (id) [horizontalBlockCollision block (ballLoc game) radius | block <- (blocks game)]
+     verticalCollision = any (id) [verticalBlockCollision block (ballLoc game) radius | block <- (blocks game)]
      newBlocks = filter (/=(fromJust collidedBlock)) (blocks game)
      collidedBlock = find (blockCollision game radius) (blocks game)
-     blockCollision game radius block = any id $ [leftBlockCollision, rightBlockCollision, topBlockCollision, bottomBlockCollision] <*> [block] <*> [ballLoc game] <*> [radius]
+     blockCollision game radius block = any id $ [horizontalBlockCollision, verticalBlockCollision] <*> [block] <*> [ballLoc game] <*> [radius]
 
 restartGame :: BreakoutGame -> BreakoutGame
 restartGame game = if ballOut then game { ballLoc = ballLoc initialState, ballVel = ballVel initialState } else game
@@ -136,26 +131,21 @@ blockBottom (blockX, blockY) = blockY - blockWidth / 2
 
 
 handleKeys :: Event -> BreakoutGame -> BreakoutGame
-
 handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) game =  game { keyLeft = True }
 handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) game =    game { keyLeft = False }
 handleKeys (EventKey (SpecialKey KeyRight) Down _ _) game = game { keyRight = True }
 handleKeys (EventKey (SpecialKey KeyRight) Up _ _) game =   game { keyRight = False }
-
--- Do nothing for all other events.
-handleKeys _ game = game
+handleKeys _ game = game -- Do nothing for all other events.
 
 paddleMove seconds game = game { paddle = (x', y), paddleVel = vx' } where
       left = keyLeft game
       right = keyRight game
       (x, y) = paddle game
       vx = paddleVel game
-
       vx' = if left && right then 0
         else if left then max (-1000) $ min (vx - 30) (- 70)
         else if right then min 1000 $ max (vx + 30) 70
         else 0
-
       x' = max (- width / 2) $ min (width / 2) (x + vx' * seconds)
 
 
