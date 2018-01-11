@@ -9,6 +9,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import BreakoutGame
 import Collisions
 import LayoutDimensions
+import Levels
 
 
 window :: Display
@@ -36,8 +37,11 @@ initialState = Game
   , paddleVel = 0
   , keyLeft = False
   , keyRight = False
-  , blocks = map gridPosToPos blocksByGrid
+  , blocks = map gridPosToPos $ head levels
+  , level = 1
+  , levelsRemaining = tail levels
   , score = 0
+  , complete = False
   }
 
 blockColor = green
@@ -80,9 +84,23 @@ blocksBounce game
      blockCollision game radius block = any id $ [horizontalBlockCollision, verticalBlockCollision] <*> [block] <*> [ballLoc game] <*> [radius]
 
 restartGame :: BreakoutGame -> BreakoutGame
-restartGame game = if ballOut then game { ballLoc = ballLoc initialState, ballVel = ballVel initialState } else game
+restartGame game = if ballOut then initialState else game
         where
 	ballOut = bottomCollision (ballLoc game) radius
+
+levelEnd :: BreakoutGame -> BreakoutGame
+levelEnd game
+    | null (blocks game) && null (levelsRemaining game) = game { complete = True }
+    | null (blocks game) = nextLevel game
+    | otherwise = game
+    where
+    nextLevel game = game
+        { level = 1 + level game
+        , blocks = map gridPosToPos $ head (levelsRemaining game)
+        , levelsRemaining = tail (levelsRemaining game)
+        , ballLoc = ballLoc initialState
+        , ballVel = ballVel initialState
+        }
 
 
 moveBall :: Float -> BreakoutGame -> BreakoutGame
@@ -100,7 +118,9 @@ a = gridWidth / 2 - 20
 b = - gridHeight + 2 * borderSize
 
 render :: BreakoutGame -> Picture
-render game = pictures $ [
+render game
+    | complete game = pictures $ [scoreText $ score game]
+    | otherwise = pictures $ [
     ball
     , mkBlock paddleBorderColor paddleColor $ paddle game
     , scoreText $ score game
@@ -154,5 +174,13 @@ main = play window background fps initialState render handleKeys update
     where
         -- timePassed -> game state -> new state
         update :: Float -> BreakoutGame -> BreakoutGame
-        update seconds = restartGame . blocksBounce . sideBounce . topBounce . paddleBounce . moveBall seconds . paddleMove seconds
+        update seconds game@(Game { complete = True }) = game
+        update seconds game = restartGame .
+            levelEnd .
+            blocksBounce .
+            sideBounce .
+            topBounce .
+            paddleBounce .
+            moveBall seconds .
+            paddleMove seconds $ game
 

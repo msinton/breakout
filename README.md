@@ -25,7 +25,7 @@ Tasks
 Assign yourself to a task by prefixing with your name.
 
 - tidy code:
-    - [Matt SH] separate collision logic
+    - separate collision logic
     - generalise collision fns/ use function composition to get DRY
     - encapsulate all dimensions in a data record?
 
@@ -43,7 +43,7 @@ Assign yourself to a task by prefixing with your name.
     - restarts game after next key press
 
 - levels
-    - when clear all blocks progress to next level
+    - [Matt S-H] when clear all blocks progress to next level
 
 - scoreboard
     - display highscores

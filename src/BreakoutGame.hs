@@ -8,5 +8,8 @@ data BreakoutGame = Game
   , keyLeft :: Bool
   , keyRight :: Bool
   , blocks :: [(Float, Float)]
+  , level :: Integer
+  , levelsRemaining :: [[(Float, Float)]]
+  , complete :: Bool
   , score :: Integer
   } deriving Show
