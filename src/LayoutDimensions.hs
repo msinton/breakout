@@ -16,6 +16,6 @@ borderSize = 100
 
 gridWidth, gridHeight, width, height :: Float
 gridWidth = 7 * blockWidth
-gridHeight = 500
+gridHeight = 400
 width = gridWidth + 2 * borderSize
 height = gridHeight + 2 * borderSize

@@ -118,9 +118,7 @@ a = gridWidth / 2 - 20
 b = - gridHeight + 2 * borderSize
 
 render :: BreakoutGame -> Picture
-render game
-    | complete game = pictures $ [scoreText $ score game]
-    | otherwise = pictures $ [
+render game = pictures $ [
     ball
     , mkBlock paddleBorderColor paddleColor $ paddle game
     , scoreText $ score game
@@ -137,7 +135,8 @@ render game
             ]
 
 scoreText :: Integer -> Picture
-scoreText i = translate (width / 3) (height / 3) $ scale 0.25 0.25 $ color red $ text $ show i
+scoreText i = translate ((width - borderSize) / 2) ((height - borderSize) / 2) $ scale 0.25 0.25 $ color red $ text $ show i
+
 
 fps :: Int
 fps = 60
