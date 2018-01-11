@@ -24,13 +24,16 @@ Tasks
 -----
 Assign yourself to a task by prefixing with your name.
 
+- bugs
+    - ball can get stuck inside paddle when entering from corner and moving paddle
+
 - tidy code:
     - separate collision logic
     - generalise collision fns/ use function composition to get DRY
     - encapsulate all dimensions in a data record?
 
 - improve collisions with blocks/paddle
-    - take velocity into account
+    - [Matt S-H] take velocity into account
     - change vx and vy proportionally wrt corner collisions
     - allow size of paddle to vary independently to size of blocks
 
@@ -41,9 +44,6 @@ Assign yourself to a task by prefixing with your name.
 
 - dying
     - restarts game after next key press
-
-- levels
-    - [Matt S-H] when clear all blocks progress to next level
 
 - scoreboard
     - display highscores

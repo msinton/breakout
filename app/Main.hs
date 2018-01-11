@@ -6,11 +6,11 @@ import Data.Maybe
 import Graphics.Gloss
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
+import Controls
 import BreakoutGame
 import Collisions
 import LayoutDimensions
 import Levels
-
 
 window :: Display
 window = InWindow "Breakout" (round width, round height) (0, 0)
@@ -35,8 +35,7 @@ initialState = Game
   , ballVel = (200, -150)
   , paddle = (gridWidth / 2 - 10, - gridHeight + 2 * borderSize)
   , paddleVel = 0
-  , keyLeft = False
-  , keyRight = False
+  , controls = Controls { keyLeft = False, keyRight = False, keyEnter = False }
   , blocks = map gridPosToPos $ head levels
   , level = 1
   , levelsRemaining = tail levels
@@ -86,7 +85,7 @@ blocksBounce game
 restartGame :: BreakoutGame -> BreakoutGame
 restartGame game = if ballOut then initialState else game
         where
-	ballOut = bottomCollision (ballLoc game) radius
+        ballOut = bottomCollision (ballLoc game) radius
 
 levelEnd :: BreakoutGame -> BreakoutGame
 levelEnd game
@@ -121,8 +120,10 @@ render :: BreakoutGame -> Picture
 render game = pictures $ [
     ball
     , mkBlock paddleBorderColor paddleColor $ paddle game
+    , levelText $ level game
     , scoreText $ score game
-    ] ++ [ mkBlock blockBorderColor blockColor b | b <- blocks game]
+    ] ++ [ mkBlock blockBorderColor blockColor b | b <- blocks game
+    ] ++ completedGameText
     where
         ball = uncurry translate (ballLoc game) $ color ballColor $ circleSolid radius
         ballColor = dark red
@@ -134,9 +135,19 @@ render game = pictures $ [
             , translate x y $ color col $ rectangleSolid (paddleWidth - 4) (paddleHeight - 4)
             ]
 
-scoreText :: Integer -> Picture
-scoreText i = translate ((width - borderSize) / 2) ((height - borderSize) / 2) $ scale 0.25 0.25 $ color red $ text $ show i
+        completedGameText = if complete game then completeText (score game) else []
 
+levelText :: Integer -> Picture
+levelText i = translate (-(width - borderSize) / 2) ((height - borderSize) / 2) $ scale 0.2 0.2 $ color red $ text $ "level " ++ show i
+
+scoreText :: Integer -> Picture
+scoreText i = translate ((width - borderSize) / 2) ((height - borderSize) / 2) $ scale 0.2 0.2 $ color red $ text $ show i
+
+completeText :: Integer -> [Picture]
+completeText score =
+    [ translate (- 100) (borderSize) $ scale 0.4 0.4 $ color yellow $ text "Well Done!"
+    , translate (- 100) 0 $ scale 0.2 0.2 $ color yellow $ text $ show score
+    ]
 
 fps :: Int
 fps = 60
@@ -150,15 +161,18 @@ blockBottom (blockX, blockY) = blockY - blockWidth / 2
 
 
 handleKeys :: Event -> BreakoutGame -> BreakoutGame
-handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) game =  game { keyLeft = True }
-handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) game =    game { keyLeft = False }
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) game = game { keyRight = True }
-handleKeys (EventKey (SpecialKey KeyRight) Up _ _) game =   game { keyRight = False }
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) game@(Game {controls = controls})   = game { controls = controls { keyLeft = True } }
+handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) game@(Game {controls = controls})     = game { controls = controls { keyLeft = False } }
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) game@(Game {controls = controls})  = game { controls = controls { keyRight = True } }
+handleKeys (EventKey (SpecialKey KeyRight) Up _ _) game@(Game {controls = controls})    = game { controls = controls { keyRight = False } }
+handleKeys (EventKey (SpecialKey KeyEnter) Down _ _) game@(Game {controls = controls})  = game { controls = controls { keyEnter = True } }
+handleKeys (EventKey (SpecialKey KeyEnter) Up _ _) game@(Game {controls = controls})    = game { controls = controls { keyEnter = False } }
 handleKeys _ game = game -- Do nothing for all other events.
 
 paddleMove seconds game = game { paddle = (x', y), paddleVel = vx' } where
-      left = keyLeft game
-      right = keyRight game
+      c = controls game
+      left = keyLeft c
+      right = keyRight c
       (x, y) = paddle game
       vx = paddleVel game
       vx' = if left && right then 0
@@ -167,13 +181,16 @@ paddleMove seconds game = game { paddle = (x', y), paddleVel = vx' } where
         else 0
       x' = max (- width / 2) $ min (width / 2) (x + vx' * seconds)
 
+dismissGameComplete :: BreakoutGame -> BreakoutGame
+dismissGameComplete game =
+    if (keyEnter (controls game)) then initialState else game
 
 main :: IO ()
 main = play window background fps initialState render handleKeys update
     where
         -- timePassed -> game state -> new state
         update :: Float -> BreakoutGame -> BreakoutGame
-        update seconds game@(Game { complete = True }) = game
+        update seconds game@(Game { complete = True }) = dismissGameComplete game
         update seconds game = restartGame .
             levelEnd .
             blocksBounce .
