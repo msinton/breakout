@@ -32,7 +32,7 @@ gridPosToPos (x, y) = (x * blockWidth - gridWidth / 2, y * (- blockHeight) + gri
 initialState :: BreakoutGame
 initialState = Game
   { ballLoc = (0, 0)
-  , ballVel = (200, -150)
+  , ballVel = (200, -200)
   , paddle = (gridWidth / 2 - 10, - gridHeight + 2 * borderSize)
   , paddleVel = 0
   , controls = Controls { keyLeft = False, keyRight = False, keyEnter = False }
@@ -52,10 +52,10 @@ paddleBounce :: BreakoutGame -> BreakoutGame
 paddleBounce game = game { ballVel = (vx', vy') }
   where
     (vx, vy) = ballVel game
-    vy' = if verticalBlockCollision (paddle game) (ballLoc game) radius then -vy else vy
-    vx' = if horizontalBlockCollision (paddle game) (ballLoc game) radius 
-          then -vx
-          else vx
+
+    (collided, fractDist) = paddleCollision (paddle game) (ballLoc game) radius
+    (vx', vy') = if collided then (fractDist * 400 - 200, (1/2 - abs(fractDist -  1/2)) * 100 + 200) else (vx, vy)
+
 
 topBounce :: BreakoutGame -> BreakoutGame
 topBounce game = game { ballVel = (vx, vy') }
@@ -97,8 +97,6 @@ levelEnd game
         { level = 1 + level game
         , blocks = map gridPosToPos $ head (levelsRemaining game)
         , levelsRemaining = tail (levelsRemaining game)
-        , ballLoc = ballLoc initialState
-        , ballVel = ballVel initialState
         }
 
 
@@ -147,6 +145,7 @@ completeText :: Integer -> [Picture]
 completeText score =
     [ translate (- 100) (borderSize) $ scale 0.4 0.4 $ color yellow $ text "Well Done!"
     , translate (- 100) 0 $ scale 0.2 0.2 $ color yellow $ text $ show score
+    , translate (- 100) (- borderSize) $ scale 0.1 0.1 $ color green $ text "Press Enter to restart"
     ]
 
 fps :: Int
@@ -169,7 +168,7 @@ handleKeys (EventKey (SpecialKey KeyEnter) Down _ _) game@(Game {controls = cont
 handleKeys (EventKey (SpecialKey KeyEnter) Up _ _) game@(Game {controls = controls})    = game { controls = controls { keyEnter = False } }
 handleKeys _ game = game -- Do nothing for all other events.
 
-paddleMove seconds game = game { paddle = (x', y), paddleVel = vx' } where
+movePaddle seconds game = game { paddle = (x', y), paddleVel = vx' } where
       c = controls game
       left = keyLeft c
       right = keyRight c
@@ -197,6 +196,6 @@ main = play window background fps initialState render handleKeys update
             sideBounce .
             topBounce .
             paddleBounce .
-            moveBall seconds .
-            paddleMove seconds $ game
+            movePaddle seconds .
+            moveBall seconds $ game
 

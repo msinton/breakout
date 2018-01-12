@@ -25,7 +25,8 @@ Tasks
 Assign yourself to a task by prefixing with your name.
 
 - bugs
-    - ball can get stuck inside paddle when entering from corner and moving paddle
+    - ball can hit the right or left side of blocks directly from below
+        and the ball does not rebound
 
 - tidy code:
     - separate collision logic
@@ -33,8 +34,6 @@ Assign yourself to a task by prefixing with your name.
     - encapsulate all dimensions in a data record?
 
 - improve collisions with blocks/paddle
-    - [Matt S-H] take velocity into account
-    - change vx and vy proportionally wrt corner collisions
     - allow size of paddle to vary independently to size of blocks
 
 - blocks
